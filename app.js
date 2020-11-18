@@ -16,6 +16,7 @@ app.get('/', (request, response) => {
 })
 
 app.get('/stories', db.getStories);
+app.get('/stories/:id', db.getStoryById);
 app.get('/stories-end/:ite', db.getEndedStories);
 app.get('/stories/:ite', db.getCurrentStories);
 app.get('/contents/:id', db.getStoryContents);

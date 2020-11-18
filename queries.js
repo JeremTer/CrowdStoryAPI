@@ -15,7 +15,17 @@ const getStories = (request, response) => {
         if (error) {
             throw error;
         }
-        client.end();
+        response.status(200).json(results.rows);
+    });
+}
+
+const getStoryById = (request, response) => {
+    const id = parseInt(request.params.id)
+
+    client.query('SELECT * FROM story WHERE id = $1', [id], (error, results) => {
+        if (error) {
+            throw error;
+        }
         response.status(200).json(results.rows);
     });
 }
@@ -142,6 +152,7 @@ const updateStory = (request, response) => {
 
 module.exports = {
     getStories,
+    getStoryById,
     getEndedStories,
     getCurrentStories,
     getStoryContents,
