@@ -26,8 +26,6 @@ app.post('/story', db.createStory);
 app.post('/content/:id', db.addContentToNewStory);
 app.post('/content-child/:id', db.addContentChild);
 
-//app.put('/story', db.updateStory);
-
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`)

@@ -9,7 +9,6 @@ const client = new Client({
 
 client.connect();
 
-/* Stories */
 const getStories = (request, response) => {
     client.query('SELECT * FROM story', (error, results) => {
         if (error) {
@@ -116,38 +115,54 @@ const addContentChild = (request, response) => {
             if (error) {
                 throw error;
             }
+            searchToUpdateStory(parentId);
             response.status(201).send(`Content child added with ID: ${insertId}`);
         });
     });
 }
-/*
-const updateStory = (request, response) => {
-    const {storyId, contentId} = request.body;
 
-    client.query('delete from story_content where story_id = $1', [storyId], (error, results) => {
+async function getStoryIdByContent(contentId) {
+    let storyId;
+    const rows = await client.query('select story_id from story_content where content_id = $1', [contentId]);
+
+    if(rows.rows.length > 0) {
+        storyId = rows.rows[0].story_id;
+        if (!storyId) {
+            return;
+        }
+        return storyId;
+    }
+}
+
+async function searchToUpdateStory(parentId) {
+    const rows = await client.query('select * from content_child where parent_id = $1', [parentId]);
+    const contents = await rows.rows;
+
+    if (!contents || contents.length !== 5) {
+        return;
+    }
+    const storyId = await getStoryIdByContent(parentId);
+    if(storyId) {
+        await deleteStoryContent(storyId);
+    } else {
+        return;
+    }
+
+    for (const content of contents) {
+        await client.query('insert into story_content(story_id, content_id) values ($1, $2)', [storyId, content.child_id]);
+    }
+
+    client.query('delete from content_child where parent_id = $1', [parentId], (error, results) => {
         if (error) {
             throw error;
         }
-        client.query('insert into story_content(story_id, content_id) values ($1, $2)', [storyId, contentId], (error, results) => {
-            if (error) {
-                throw error;
-            }
-            client.query('select iteration from story where id = $1', [storyId], (error, results) => {
-                if (error) {
-                    throw error;
-                }
-                console.log(results.rows[0])
-                const iteration = results.rows[0].iteration + 1;
-                client.query('update story set iteration = $1 where id = $2', [iteration, contentId], (error, results) => {
-                    if (error) {
-                        throw error;
-                    }
-                    response.status(201).send(`Story updated with ID: ${storyId}`);
-                });
-            });
-        });
     });
-}*/
+
+}
+
+async function deleteStoryContent(storyId) {
+    await client.query('delete from story_content where story_id = $1', [storyId]);
+}
 
 
 module.exports = {
@@ -159,6 +174,5 @@ module.exports = {
     getContentChilds,
     createStory,
     addContentToNewStory,
-    addContentChild,
-    //updateStory
+    addContentChild
 };
