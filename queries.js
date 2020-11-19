@@ -97,11 +97,23 @@ const addContentToNewStory = (request, response) => {
             if (error) {
                 throw error;
             }
-            client.query('update story set iteration = iteration + 1 where id = $1', [storyId]);
+            searchToUpdateNewStory(storyId);
             response.status(201).send(`Content added with ID: ${insertId}`);
         });
     });
 }
+
+async function searchToUpdateNewStory(storyId) {
+    const rows = await client.query('select * from story_content where story_id = $1', [storyId]);
+    const contents = await rows.rows;
+
+    if (!contents || contents.length !== 5) {
+        return;
+    }
+
+    client.query('update story set iteration = iteration + 1 where id = $1', [storyId]);
+}
+
 
 const addContentChild = (request, response) => {
     const {text} = request.body;
