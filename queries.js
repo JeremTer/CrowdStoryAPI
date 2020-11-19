@@ -152,6 +152,8 @@ async function searchToUpdateStory(parentId) {
         await client.query('insert into story_content(story_id, content_id) values ($1, $2)', [storyId, content.child_id]);
     }
 
+    await client.query('update story set iteration = iteration + 1 where id = $1', [storyId]);
+
     client.query('delete from content_child where parent_id = $1', [parentId], (error, results) => {
         if (error) {
             throw error;
