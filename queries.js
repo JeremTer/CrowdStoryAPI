@@ -97,6 +97,7 @@ const addContentToNewStory = (request, response) => {
             if (error) {
                 throw error;
             }
+            client.query('update story set iteration = iteration + 1 where id = $1', [storyId]);
             response.status(201).send(`Content added with ID: ${insertId}`);
         });
     });
